@@ -1,0 +1,90 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_application_2/Conversations.dart';
+import 'package:http/http.dart' as http;
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  var mydatalist = [];
+
+  @override
+  void initState() {
+    //API Call
+    _fetchData();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView.builder(
+        //itemCount: snapshot.data.length,
+        itemCount: mydatalist.length,
+        itemBuilder: (context, index) {
+          return Card(
+            child: ListTile(
+                onTap: () {
+                  setState(() {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => Conversations(index))));
+                  });
+                },
+                leading: Image.network(mydatalist[index]['image'], width: 80),
+                title: Text(mydatalist[index]['id'].toString()),
+                subtitle: Text(mydatalist[index]['price'].toString()),
+                trailing: Icon(Icons.arrow_circle_right_outlined)),
+          );
+        },
+      ),
+    );
+  }
+
+  _fetchData() async {
+    try {
+      //API URL
+      var url = Uri.https('fakestoreapi.com', 'products');
+      //API Call URL
+      var response = await http.get(url);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      var mymap = json.decode(response.body);
+      mydatalist = mymap;
+      
+      // Map<String, dynamic> mymap = json.decode(response.body);
+      // mydatalist = mymap['products'];
+      setState(() {
+        mydatalist;
+      });
+      //return mydatalist;
+    } catch (error) {
+      print("Error in API Calling");
+      rethrow;
+    }
+  }
+}
